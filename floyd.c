@@ -55,12 +55,14 @@ int main(int argc, char **argv) {
     low_value = BLOCK_LOW(rank, processes, n);
     matrix = (int **) malloc(size * sizeof(int));
     if(matrix == NULL){
-        MPI_Abort(MPI_COMM_WORLD,-1);
+        fprintf(stderr, "Failed allocating matrix\n");
+        MPI_Abort(MPI_COMM_WORLD, -1);
     }
 
     matrix_storage = (int *) malloc(size*n*sizeof(int));
     if(matrix_storage == NULL){
-        MPI_Abort(MPI_COMM_WORLD,-1);
+        fprintf(stderr, "Failed allocating matrix_storage\n");
+        MPI_Abort(MPI_COMM_WORLD, -1);
     }
 
     for(int i=0; i<size; i++){
@@ -73,7 +75,7 @@ int main(int argc, char **argv) {
             int local_size = BLOCK_SIZE(i, processes, n);
             for (int j = 0; j < local_size * n; j++)
                 fscanf(matrix_file, "%d", &matrix_storage[j]);
-            MPI_Irsend(matrix_storage, local_size * n, MPI_INT, i, 0, MPI_COMM_WORLD, &request);
+            if (processes > 1) MPI_Irsend(matrix_storage, local_size * n, MPI_INT, i, 0, MPI_COMM_WORLD, &request);
         }
         for (int i = 0; i < size * n; i++)
             fscanf(matrix_file, "%d", &matrix_storage[i]);
@@ -97,10 +99,14 @@ int main(int argc, char **argv) {
         fprintf(stdout, "\n");
         fflush(stdout);
     }
-    MPI_Send(&debug, 1, MPI_INT, (rank + 1) % processes, 1, MPI_COMM_WORLD);
+    if (processes > 1) MPI_Send(&debug, 1, MPI_INT, (rank + 1) % processes, 1, MPI_COMM_WORLD);
 #endif
 
     k_row = (int *) malloc(sizeof(int) * n);
+    if (k_row == NULL) {
+        fprintf(stderr, "Failed allocating k_row\n");
+        MPI_Abort(MPI_COMM_WORLD, -1);
+    }
 
     //Starting computation
     MPI_Barrier(MPI_COMM_WORLD);
@@ -123,7 +129,7 @@ int main(int argc, char **argv) {
                     matrix[i][j] = MIN(matrix[i][j], matrix[i][k] + k_row[j]);
                 }
             }
-#ifdef DEBUG
+#ifdef _DEBUG
             sleep(1);
             if (!rank) {
                 fprintf(stdout, "K ROW\n");
@@ -145,7 +151,7 @@ int main(int argc, char **argv) {
                 fprintf(stdout, "\n");
                 fflush(stdout);
             }
-            MPI_Send(&debug, 1, MPI_INT, (rank + 1) % processes, 1, MPI_COMM_WORLD);
+            if (processes > 1) MPI_Send(&debug, 1, MPI_INT, (rank + 1) % processes, 1, MPI_COMM_WORLD);
 #endif
         }
     }
@@ -166,7 +172,7 @@ int main(int argc, char **argv) {
         fprintf(stdout, "\n");
         fflush(stdout);
     }
-    MPI_Send(&debug, 1, MPI_INT, (rank + 1) % processes, 1, MPI_COMM_WORLD);
+    if (processes > 1) MPI_Send(&debug, 1, MPI_INT, (rank + 1) % processes, 1, MPI_COMM_WORLD);
 #endif
 
     MPI_Barrier(MPI_COMM_WORLD);
