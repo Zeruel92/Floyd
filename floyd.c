@@ -111,7 +111,9 @@ int main(int argc, char **argv) {
         for (int k = 0; k < n; k++) {
             int owner = BLOCK_OWNER(k, processes, n);
             if (rank == owner) {
+#ifdef _DEBUG
                 fprintf(stdout, "K Value %d process %d k local %d size %d\n", k, rank, (k - low_value), size);
+#endif
                 for (int j = 0; j < n; j++)
                     k_row[j] = matrix[k - low_value][j];
             }
