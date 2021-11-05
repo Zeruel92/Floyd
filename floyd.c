@@ -25,6 +25,7 @@ int main(int argc, char **argv) {
     int **matrix, *matrix_storage, *k_row;
     int n;
     int size;
+    int low_value;
 
     double elapsed_time;
 
@@ -50,8 +51,9 @@ int main(int argc, char **argv) {
     MPI_Bcast(&n,1,MPI_INT,processes-1,MPI_COMM_WORLD);
 
     //Preparing array
-    size = BLOCK_SIZE(rank,processes,n);
-    matrix = (int **) malloc(size*sizeof(int));
+    size = BLOCK_SIZE(rank, processes, n);
+    low_value = BLOCK_LOW(rank, processes, n);
+    matrix = (int **) malloc(size * sizeof(int));
     if(matrix == NULL){
         MPI_Abort(MPI_COMM_WORLD,-1);
     }
@@ -109,8 +111,9 @@ int main(int argc, char **argv) {
         for (int k = 0; k < n; k++) {
             int owner = BLOCK_OWNER(k, processes, n);
             if (rank == owner) {
+                fprintf(stdout, "K Value %d process %d k local %d size %d\n", k, rank, (k - low_value), size);
                 for (int j = 0; j < n; j++)
-                    k_row[j] = matrix_storage[(k % size) * n + j];
+                    k_row[j] = matrix[k - low_value][j];
             }
             MPI_Bcast(k_row, n, MPI_INT, owner, MPI_COMM_WORLD);
             for (int i = 0; i < size; i++) {
@@ -118,7 +121,7 @@ int main(int argc, char **argv) {
                     matrix[i][j] = MIN(matrix[i][j], matrix[i][k] + k_row[j]);
                 }
             }
-#ifdef _DEBUG
+#ifdef DEBUG
             sleep(1);
             if (!rank) {
                 fprintf(stdout, "K ROW\n");
