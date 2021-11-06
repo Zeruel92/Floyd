@@ -46,7 +46,10 @@ int main(int argc, char **argv) {
     if (rank == (processes - 1)) {
         matrix_file = fopen("./matrix", "r");
         fscanf(matrix_file, "%d", &n);
-        //n = strtol(buffer,NULL,10);
+        if (processes > n) {
+            fprintf(stderr, "The number of processors exceed matrix dimensions\n");
+            MPI_Abort(MPI_COMM_WORLD, -2);
+        }
     }
     MPI_Bcast(&n,1,MPI_INT,processes-1,MPI_COMM_WORLD);
 
