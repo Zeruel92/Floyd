@@ -15,7 +15,7 @@
 #define BLOCK_SIZE(id, p, n) (BLOCK_HIGH(id,p,n)-BLOCK_LOW(id,p,n)+1)
 #define BLOCK_OWNER(j, p, n) (((p)*((j)+1)-1)/(n))
 
-#define MAX_ITERATIONS 1
+
 
 int main(int argc, char **argv) {
 

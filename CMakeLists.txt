@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.20)
 project(Floyd C)
 
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_FLAGS "-O3 -Wall -Wextra")
-set(CMAKE_C_FLAGS_DEBUG "-D_DEBUG -O3 -Wall -Wextra")
+set(CMAKE_C_FLAGS "-O3 -Wall -Wextra -DMAX_ITERATIONS=100")
+set(CMAKE_C_FLAGS_DEBUG "-D_DEBUG -O3 -Wall -Wextra -DMAX_ITERATIONS=1")
 set(CMAKE_C_COMPILER mpiicc)
 
 find_package(MPI REQUIRED)
